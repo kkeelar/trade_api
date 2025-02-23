@@ -5,14 +5,13 @@ FROM python:3.11
 WORKDIR /app
 
 # Copy project files
-COPY . .
+COPY . /app
 
-# Install dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Install dependencies, including WebSockets
+RUN pip install --no-cache-dir uvicorn[standard] fastapi sqlalchemy psycopg2-binary websockets
 
-# Expose port
+# Expose port 8000
 EXPOSE 8000
 
-# Run the application
+# Run FastAPI with WebSocket support
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
