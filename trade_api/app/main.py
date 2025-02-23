@@ -1,16 +1,22 @@
-from fastapi import FastAPI
-from app.routes import router
-from app.database import engine
-from app.models import Base
+from fastapi import FastAPI, WebSocket
+from typing import List
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+app = FastAPI()
 
-app = FastAPI(title="Trade Order API", version="1.0")
+# Store active WebSocket connections
+clients: List[WebSocket] = []
 
-# Include routes
-app.include_router(router)
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    clients.append(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()  # Keep connection open
+    except:
+        clients.remove(websocket)
 
-@app.get("/")
-def root():
-    return {"message": "Trade Order API is running!"}
+# Function to send real-time updates
+async def send_update(order_data):
+    for client in clients:
+        await client.send_json(order_data)
