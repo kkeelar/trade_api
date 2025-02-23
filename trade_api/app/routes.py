@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, WebSocket
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import schemas, crud
@@ -15,13 +15,3 @@ async def create_order(order: schemas.OrderCreate, db: Session = Depends(get_db)
 @router.get("/orders", response_model=list[schemas.OrderResponse])
 def get_orders(db: Session = Depends(get_db)):
     return crud.get_orders(db)
-
-# WebSocket Endpoint
-@router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        try:
-            data = await websocket.receive_text()  # Keep connection open
-        except:
-            break  # Close WebSocket connection
